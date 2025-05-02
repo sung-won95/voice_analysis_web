@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 분석 웹</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>음성 분석 애플리케이션</h1>
+            <p>5도 스케일을 선택하고 녹음하여 AI 분석 결과를 받아보세요.</p>
+        </header>
+        
+        <main>
+            <section id="scale-selection">
+                <h2>1. 5도 스케일 선택</h2>
+                <div class="scale-container" id="scale-list">
+                    <!-- JavaScript로 스케일 목록 로드 -->
+                </div>
+                <div class="player-container">
+                    <p>선택된 스케일: <span id="selected-scale">없음</span></p>
+                    <audio id="scale-player" controls></audio>
+                    <button id="play-scale" class="btn" disabled>스케일 재생</button>
+                </div>
+            </section>
+            
+            <section id="recording">
+                <h2>2. 음성 녹음</h2>
+                <div class="recording-controls">
+                    <button id="start-recording" class="btn btn-primary" disabled>녹음 시작</button>
+                    <button id="stop-recording" class="btn btn-danger" disabled>녹음 종료</button>
+                </div>
+                <div class="recording-status">
+                    <p>상태: <span id="recording-status-text">대기 중</span></p>
+                    <div id="recording-indicator"></div>
+                </div>
+                <div class="audio-preview">
+                    <p>녹음된 오디오 미리듣기:</p>
+                    <audio id="recorded-audio" controls></audio>
+                </div>
+                <div class="analysis-controls">
+                    <button id="analyze-button" class="btn btn-primary" disabled>분석 시작</button>
+                </div>
+                <div class="analysis-status">
+                    <p>분석 상태: <span id="analysis-status-text">대기 중</span></p>
+                    <div class="loader" id="analysis-loader"></div>
+                </div>
+            </section>
+            
+            <!-- 분석 결과 섹션 (초기에는 숨김) -->
+            <section id="analysis-results" style="display: none;">
+                <h2>3. 분석 결과</h2>
+                <div class="result-overview">
+                    <div class="result-header">
+                        <h3>종합 피드백</h3>
+                        <p>파일: <span id="wav-key">-</span></p>
+                    </div>
+                    <div class="feedback-box">
+                        <p id="scale-type">-</p>
+                    </div>
+                </div>
+                
+                <div class="segments-section">
+                    <h3>세그먼트 분석</h3>
+                    <div class="segments-container" id="segments-list">
+                        <!-- JavaScript로 세그먼트 목록 로드 -->
+                    </div>
+                </div>
+                
+                <div class="visualization-section">
+                    <h3>시각화</h3>
+                    <div class="chart-container">
+                        <canvas id="visualization-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="explanation">
+                <h2>분석 항목 설명</h2>
+                <div class="explanation-grid">
+                    <div class="explanation-item">
+                        <h3>성대 진동 (Vocal Cord)</h3>
+                        <p>성대가 소리를 내는 방식을 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 가볍게 진동</li>
+                            <li><strong>M_L, M_H:</strong> 중간 정도 진동</li>
+                            <li><strong>H_L, H_H:</strong> 두껍게 진동</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>접촉 (Contact)</h3>
+                        <p>성대의 접촉 정도를 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 약한 접촉</li>
+                            <li><strong>M_L, M_H:</strong> 중간 정도 접촉</li>
+                            <li><strong>H_L, H_H:</strong> 강한 접촉</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>후두 위치 (Larynx)</h3>
+                        <p>발성 시 후두의 위치를 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 낮은 위치</li>
+                            <li><strong>M_L, M_H:</strong> 중간 위치</li>
+                            <li><strong>H_L, H_H:</strong> 높은 위치</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>발성 강도 (Strength)</h3>
+                        <p>발성의 강도와 에너지를 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 약한 강도</li>
+                            <li><strong>M_L, M_H:</strong> 중간 강도</li>
+                            <li><strong>H_L, H_H:</strong> 강한 강도</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 음성 분석 애플리케이션</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scales.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

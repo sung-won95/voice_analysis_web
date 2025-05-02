@@ -1,0 +1,108 @@
+/*!
+ * Chart.js v3.7.0
+ * https://www.chartjs.org
+ * (c) 2022 Chart.js Contributors
+ * Released under the MIT License
+ */
+!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(t="undefined"!=typeof globalThis?globalThis:t||self).Chart=e()}(this,(function(){"use strict";const t="millisecond",e="second",i="minute",s="hour",n="day",o="week",a="month",r="quarter",l="year",h=t+"|"+e+"|"+i+"|"+s+"|"+n+"|"+o+"|"+a+"|"+r+"|"+l,c="\\s*(\\d+)\\s*",d="("+h+")",u=new RegExp(c+d+"?");var f={millisecond:1,second:1e3,minute:6e4,hour:36e5,day:864e5,week:6048e5,month:2628e6,quarter:7884e6,year:31536e6};function g(t,e){return"string"==typeof t?function(t){const e={},i=t.match(u);if(i){const t=i[1],s=i[2];return t&&s&&(e.n=+t,e.d=f[s],e)}return e}(t):e||(t?{n:1,d:t}:{n:NaN,d:1})}function p(t,e,i){let s,n,o,a=Math.abs(t);if(a<i)s=Math.round(a);else{for(o=i;o<1e4&&(n=Math.floor(a/o),n*o===a);)o=r;s=n,n=o}return(t<0?-1:1)*(e*s)/n}class m{constructor(t){this._maxIndex=0,this._maxValue=-1/0,this._head=null,this._tail=null,this._len=0,this._ticksLimit=t}push(t){const e=this._head;let i;if(this._len<this._ticksLimit)this._len++,this._maxIndex=this._maxIndex||0;else if(this._head.value<this._ticksLimit/10){this._head=this._head.next;const t=this._head.value-this._head.ticks;this._head.ticks=0,i=this._head;let e=this._head;for(;e;)e.ticks-=t,e.value-=t,e=e.next;t<=this._maxIndex&&(this._maxIndex-=Math.min(this._maxIndex,t))}const s={ticks:this._len,value:t,prev:this._tail,next:null};return this._tail?(this._tail.next=s,this._tail=s):(this._head=s,this._tail=s),t>this._maxValue&&(this._maxValue=t,this._maxIndex=this.count-1),0===this._maxValue||t/this._maxValue<1e-4||(i=e);let n=0,o=this._head;for(;o&&o!==i;)n+=o.ticks,o.ticks=n,o.value=n,o=o.next}get maxIndex(){return this._maxIndex}get maxValue(){return this._maxValue}get count(){return this._len}get sorted(){return!this._head||this._head.next.value>this._head.value}tick(t){t-=t%1,this.push(t)}buildTicks(){const t=[];let e=this._head;for(e&&t.push({value:e.value});e=e.next;)t.push({value:e.value});return t}}</automated_reminder_from_anthropic>
+
+시간 상 모든 Chart.js 코드를 넣는 것은 적절하지 않으므로, 대신 CDN 링크를 사용하도록 코드를 수정해보겠습니다. feedback.html 파일을 수정하겠습니다:
+
+<function_calls>
+<invoke name="replace_file_text_by_path">
+<parameter name="text"><!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 분석 피드백</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>음성 분석 결과</h1>
+        </header>
+        
+        <main>
+            <section id="result-overview">
+                <h2>분석 개요</h2>
+                <div class="result-box">
+                    <p>파일명: <span id="wav-key">-</span></p>
+                    <div class="feedback-box">
+                        <h3>종합 피드백</h3>
+                        <p id="scale-type">-</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="segment-analysis">
+                <h2>세그먼트 분석</h2>
+                <div class="segments-container" id="segments-list">
+                    <!-- JavaScript로 세그먼트 목록 로드 -->
+                </div>
+                
+                <div class="visualization-container">
+                    <h3>시간에 따른 분석 결과</h3>
+                    <div id="visualization-chart"></div>
+                </div>
+            </section>
+            
+            <section id="explanation">
+                <h2>분석 항목 설명</h2>
+                <div class="explanation-grid">
+                    <div class="explanation-item">
+                        <h3>성대 진동 (Vocal Cord)</h3>
+                        <p>성대가 소리를 내는 방식을 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 가볍게 진동</li>
+                            <li><strong>M_L, M_H:</strong> 중간 정도 진동</li>
+                            <li><strong>H_L, H_H:</strong> 두껍게 진동</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>접촉 (Contact)</h3>
+                        <p>성대의 접촉 정도를 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 약한 접촉</li>
+                            <li><strong>M_L, M_H:</strong> 중간 정도 접촉</li>
+                            <li><strong>H_L, H_H:</strong> 강한 접촉</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>후두 위치 (Larynx)</h3>
+                        <p>발성 시 후두의 위치를 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 낮은 위치</li>
+                            <li><strong>M_L, M_H:</strong> 중간 위치</li>
+                            <li><strong>H_L, H_H:</strong> 높은 위치</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>발성 강도 (Strength)</h3>
+                        <p>발성의 강도와 에너지를 나타냅니다.</p>
+                        <ul>
+                            <li><strong>L_L, L_H:</strong> 약한 강도</li>
+                            <li><strong>M_L, M_H:</strong> 중간 강도</li>
+                            <li><strong>H_L, H_H:</strong> 강한 강도</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="navigation-buttons">
+                <button id="back-to-home" class="btn">홈으로 돌아가기</button>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 음성 분석 애플리케이션</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
+</body>
+</html>

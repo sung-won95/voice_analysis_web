@@ -1,0 +1,8 @@
+flask>=2.0.0
+werkzeug>=2.0.0
+numpy>=1.20.0
+librosa>=0.8.0
+torch>=1.8.0
+tqdm>=4.60.0
+matplotlib>=3.4.0
+soundfile>=0.10.3
