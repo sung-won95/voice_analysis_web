@@ -25,6 +25,7 @@ const analysisResultsSection = document.getElementById('analysis-results');
 const wavKeyElement = document.getElementById('wav-key');
 const scaleTypeElement = document.getElementById('scale-type');
 const segmentsListElement = document.getElementById('segments-list');
+const pitchGroupsListElement = document.getElementById('pitch-groups-list');
 const visualizationChartElement = document.getElementById('visualization-chart');
 
 // 이벤트 리스너 등록
@@ -156,11 +157,113 @@ function displayAnalysisResult() {
     wavKeyElement.textContent = analysisResult.wavKey;
     scaleTypeElement.textContent = analysisResult.scaleType;
     
+    // 피치별 분석 결과 표시 (새로 추가)
+    displayPitchGroups();
+    
     // 통합된 세그먼트 정보 표시
     displayConsolidatedSegments();
     
     // 차트 시각화 (원본 세그먼트 데이터 사용)
     createVisualizationChart();
+}
+
+/**
+ * 피치별 분석 결과 표시
+ */
+function displayPitchGroups() {
+    // 피치 그룹 컨테이너 초기화
+    pitchGroupsListElement.innerHTML = '';
+    
+    // 피치 그룹이 없는 경우
+    if (!analysisResult.pitchGroups || analysisResult.pitchGroups.length === 0) {
+        pitchGroupsListElement.innerHTML = '<p>피치별 분석 결과가 없습니다.</p>';
+        return;
+    }
+    
+    // 각 피치 그룹 표시
+    analysisResult.pitchGroups.forEach(group => {
+        // 색상 지정 (낮은 음역은 파란색, 높은 음역은 붉은색으로 그라데이션)
+        const hue = 240 - (240 * (group.avgPitch - 80) / 1120); // 80Hz~1200Hz 범위에서 색상 계산
+        const color = `hsl(${hue}, 70%, 60%)`;
+        
+        // 피치 그룹 요소 생성
+        const groupElement = document.createElement('div');
+        groupElement.classList.add('pitch-group');
+        
+        // 피치 그룹 헤더
+        const headerElement = document.createElement('div');
+        headerElement.classList.add('pitch-header');
+        headerElement.style.borderLeft = `4px solid ${color}`;
+        
+        // 헤더 내용
+        const headerTitle = document.createElement('h4');
+        headerTitle.textContent = `${group.pitchGroup} (${Math.round(group.avgPitch)}Hz)`;
+        
+        const timeRange = document.createElement('span');
+        timeRange.classList.add('time-range');
+        timeRange.textContent = `${group.startTimeSec.toFixed(1)}초 ~ ${group.endTimeSec.toFixed(1)}초`;
+        
+        headerElement.appendChild(headerTitle);
+        headerElement.appendChild(timeRange);
+        
+        // 피치 그룹 콘텐츠
+        const contentElement = document.createElement('div');
+        contentElement.classList.add('pitch-content');
+        
+        // 속성 정보
+        const attributesElement = document.createElement('div');
+        attributesElement.classList.add('pitch-attributes');
+        
+        // 각 속성 추가
+        attributesElement.innerHTML = `
+            <div class="attribute">성대: ${group.vocalCord}</div>
+            <div class="attribute">접촉: ${group.contact}</div>
+            <div class="attribute">후두: ${group.larynx}</div>
+            <div class="attribute">강도: ${group.strength}</div>
+        `;
+        
+        // 피드백 텍스트
+        const feedbackElement = document.createElement('div');
+        feedbackElement.classList.add('pitch-feedback');
+        feedbackElement.textContent = group.feedback;
+        
+        // 요소 조합
+        contentElement.appendChild(attributesElement);
+        contentElement.appendChild(feedbackElement);
+        
+        groupElement.appendChild(headerElement);
+        groupElement.appendChild(contentElement);
+        
+        // 클릭 시 해당 구간 재생 기능
+        groupElement.addEventListener('click', () => {
+            const audioElement = recordedAudio;
+            if (audioElement) {
+                // 기존 재생 중인 그룹 표시 제거
+                document.querySelectorAll('.pitch-group.playing').forEach(el => {
+                    el.classList.remove('playing');
+                });
+                
+                // 현재 그룹 재생 중 표시
+                groupElement.classList.add('playing');
+                
+                // 오디오 재생 시작
+                audioElement.currentTime = group.startTimeSec;
+                audioElement.play();
+                
+                // 구간 종료 시 일시 정지
+                const duration = group.endTimeSec - group.startTimeSec;
+                setTimeout(() => {
+                    if (audioElement.currentTime >= group.endTimeSec) {
+                        audioElement.pause();
+                        groupElement.classList.remove('playing');
+                    }
+                }, duration * 1000);
+            }
+        });
+        
+        // 피치 그룹 목록에 추가
+        pitchGroupsListElement.appendChild(groupElement);
+    });
 }
 
 /**
@@ -290,6 +393,35 @@ function createVisualizationChart() {
         }
     ];
     
+    // 피치 데이터가 있는 경우 추가
+    const pitchData = sortedSegments.filter(segment => 'pitch' in segment).map(segment => segment.pitch);
+    if (pitchData.length > 0) {
+        // 피치 값 범위 조정 (1-6 사이로 정규화)
+        const maxPitch = Math.max(...pitchData);
+        const minPitch = Math.min(...pitchData);
+        const range = maxPitch - minPitch;
+        
+        const normalizedPitchData = sortedSegments.map(segment => {
+            if ('pitch' in segment) {
+                // 80-1200Hz 범위를 1-6 값으로 스케일링 (근사값)
+                return 1 + (segment.pitch - 80) / (1200 - 80) * 5;
+            }
+            return null;
+        });
+        
+        // 피치 데이터셋 추가
+        datasets.push({
+            label: '피치 (Hz)',
+            data: normalizedPitchData,
+            backgroundColor: 'rgba(153, 102, 255, 0.5)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1,
+            borderDash: [5, 5], // 점선으로 표시
+            // y축 오른쪽에 표시
+            yAxisID: 'y1'
+        });
+    }
+    
     // Chart.js를 사용하여 차트 생성
     visualizationChart = new Chart(visualizationChartElement, {
         type: 'line',
@@ -312,6 +444,22 @@ function createVisualizationChart() {
                         }
                     }
                 },
+                y1: {
+                    position: 'right',
+                    beginAtZero: false,
+                    min: 1,
+                    max: 6,
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            // 1-6 값을 피치 범위로 변환 (근사값)
+                            const pitch = 80 + (value - 1) / 5 * (1200 - 80);
+                            return `${Math.round(pitch)}Hz`;
+                        }
+                    }
+                },
                 x: {
                     // 시간 축은 표시할 때 8개 정도만 표시하여 복잡하지 않게
                     ticks: {
@@ -325,9 +473,15 @@ function createVisualizationChart() {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            const valueLabels = ['', 'L_L', 'L_H', 'M_L', 'M_H', 'H_L', 'H_H'];
-                            const value = context.raw;
-                            return `${context.dataset.label}: ${valueLabels[value] || '알 수 없음'}`;
+                            if (context.dataset.label === '피치 (Hz)' && context.raw !== null) {
+                                // 피치 값 변환 (1-6 범위에서 원래 Hz 값으로)
+                                const pitch = 80 + (context.raw - 1) / 5 * (1200 - 80);
+                                return `피치: ${Math.round(pitch)}Hz`;
+                            } else {
+                                const valueLabels = ['', 'L_L', 'L_H', 'M_L', 'M_H', 'H_L', 'H_H'];
+                                const value = context.raw;
+                                return `${context.dataset.label}: ${valueLabels[value] || '알 수 없음'}`;
+                            }
                         }
                     }
                 }
